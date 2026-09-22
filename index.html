@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>കേരള സ്കൂൾ ശാസ്ത്രോത്സവം പോസ്റ്റർ ജനറേറ്റർ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #0d47a1;
+      margin-bottom: 20px;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #0d47a1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>ശാസ്ത്രോത്സവം പോസ്റ്റർ നിർമ്മിക്കുക</h2>
+  
+  <canvas id="posterCanvas" width="800" height="1200"></canvas>
+
+  <div class="form-group">
+    <label>1. സബ്ജില്ല / ഉപജില്ല (Malayalam)</label>
+    <input type="text" id="subDistrict" placeholder="ഉദാ: കൊണ്ടോട്ടി">
+  </div>
+
+  <div class="form-group">
+    <label>2. ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യുക</label>
+    <input type="file" id="photoInput" accept="image/*">
+  </div>
+
+  <div class="form-group">
+    <label>3. പേര് (English CAPITAL)</label>
+    <input type="text" id="studentName" placeholder="E.g. AJMAL T P">
+  </div>
+
+  <div class="form-group">
+    <label>4. മേള (Fair)</label>
+    <select id="fairSelect">
+      <option value="">-- മേള തിരഞ്ഞെടുക്കുക --</option>
+      <option value="ശാസ്ത്രമേള">ശാസ്ത്രമേള</option>
+      <option value="ഗണിതശാസ്ത്രമേള">ഗണിതശാസ്ത്രമേള</option>
+      <option value="സാമൂഹ്യശാസ്ത്രമേള">സാമൂഹ്യശാസ്ത്രമേള</option>
+      <option value="ഐ.ടി. മേള">ഐ.ടി. മേള</option>
+      <option value="പ്രവൃത്തിപരിചയമേള">പ്രവൃത്തിപരിചയമേള</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>5. കാറ്റഗറി (Category)</label>
+    <select id="categorySelect">
+      <option value="">-- കാറ്റഗറി തിരഞ്ഞെടുക്കുക --</option>
+      <option value="LP">LP</option>
+      <option value="UP">UP</option>
+      <option value="HS">HS</option>
+      <option value="HSS">HSS</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>6. ഇനം (Item)</label>
+    <input type="text" id="itemInput" placeholder="E.g. STILL MODEL">
+  </div>
+
+  <div class="form-group">
+    <label>7. ഫലം / ഗ്രേഡ് (Result / Grade)</label>
+    <select id="resultSelect">
+      <option value="">-- ഗ്രേഡ് തിരഞ്ഞെടുക്കുക --</option>
+      <option value="FIRST WITH A GRADE">FIRST WITH A GRADE</option>
+      <option value="SECOND WITH A GRADE">SECOND WITH A GRADE</option>
+      <option value="THIRD WITH A GRADE">THIRD WITH A GRADE</option>
+      <option value="A GRADE">A GRADE</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>8. സ്കൂൾ (School)</label>
+    <input type="text" id="schoolInput" placeholder="E.g. GVHSS KONDOTTY">
+  </div>
+
+  <button onclick="downloadPoster()">↓ പോസ്റ്റർ ഡൗൺലോഡ് ചെയ്യുക</button>
+</div>
+
+<script>
+  const canvas = document.getElementById('posterCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // പശ്ചാത്തല ചിത്രം ലോഡ് ചെയ്യുക
+  const bgImage = new Image();
+  bgImage.src = 'background.png'; // നിങ്ങളുടെ പോസ്റ്റർ ഇമേജ് ഫയലിന്റെ പേര്
+
+  let uploadedImage = null;
+
+  bgImage.onload = function() {
+    updatePoster();
+  };
+
+  // ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യുമ്പോൾ
+  document.getElementById('photoInput').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      uploadedImage = new Image();
+      uploadedImage.onload = function() {
+        updatePoster();
+      }
+      uploadedImage.src = event.target.result;
+    }
+    if (e.target.files[0]) {
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  });
+
+  // എല്ലാ ഇൻപുട്ടുകളിലും മാറ്റം വരുമ്പോൾ പ്രിവ്യൂ റീഫ്രഷ് ചെയ്യുക
+  const inputs = document.querySelectorAll('input, select');
+  inputs.forEach(input => {
+    input.addEventListener('input', updatePoster);
+  });
+
+  function updatePoster() {
+    // 1. ബാക്ക്ഗ്രൗണ്ട് വരയ്ക്കുക
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+    // 2. ഫോട്ടോ വരയ്ക്കുക (ചതുരത്തിൽ വരാൻ)
+    if (uploadedImage) {
+      // ഫോട്ടോയുടെ സ്ഥാനം (X: 250, Y: 400, Width: 300, Height: 350) - നിങ്ങളുടെ ഡിസൈനിനനുസരിച്ച് അക്കങ്ങൾ മാറ്റാം
+      ctx.drawImage(uploadedImage, 250, 420, 300, 350);
+    }
+
+    // 3. ടെക്സ്റ്റുകൾ എഴുതുക
+    ctx.fillStyle = "#000000";
+    ctx.textAlign = "center";
+
+    // സബ്ജില്ല
+    const subDistrict = document.getElementById('subDistrict').value;
+    if (subDistrict) {
+      ctx.font = "bold 28px Arial";
+      ctx.fillText(subDistrict, 400, 360);
+    }
+
+    // പേര്
+    const name = document.getElementById('studentName').value;
+    if (name) {
+      ctx.font = "bold 32px Arial";
+      ctx.fillText(name.toUpperCase(), 400, 810);
+    }
+
+    // മേള & കാറ്റഗറി & ഇനം
+    const fair = document.getElementById('fairSelect').value;
+    const category = document.getElementById('categorySelect').value;
+    const item = document.getElementById('itemInput').value;
+    let detailsStr = [fair, category, item].filter(Boolean).join(' - ');
+    
+    if (detailsStr) {
+      ctx.font = "22px Arial";
+      ctx.fillText(detailsStr, 400, 855);
+    }
+
+    // ഗ്രേഡ്
+    const result = document.getElementById('resultSelect').value;
+    if (result) {
+      ctx.font = "bold 26px Arial";
+      ctx.fillStyle = "#d32f2f"; // ചുവപ്പ് നിറം
+      ctx.fillText(result, 400, 900);
+      ctx.fillStyle = "#000000";
+    }
+
+    // സ്കൂൾ
+    const school = document.getElementById('schoolInput').value;
+    if (school) {
+      ctx.font = "bold 24px Arial";
+      ctx.fillText(school.toUpperCase(), 400, 945);
+    }
+  }
+
+  // പോസ്റ്റർ ഡൗൺലോഡ് ചെയ്യാനുള്ള ഫംഗ്ഷൻ
+  function downloadPoster() {
+    const link = document.createElement('a');
+    link.download = 'sasthrotsavam_poster.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+</script>
+
+</body>
+</html>
